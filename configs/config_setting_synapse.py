@@ -26,16 +26,16 @@ class setting_config:
         'dims': [96, 192, 384, 768],
         'dims_decoder': [768, 384, 192, 96],
         'load_ckpt_path': None,
-
+        'stage_specs': ["LS", "LS", "LS", "LS"]
     }
     datasets_name = 'synapse' 
     input_size_h = 224
     input_size_w = 224
     if datasets_name == 'synapse':
-        data_path = './data/Synapse/train_npz/'
+        data_path = '/cabinet/dataset/Synapse/train_npz/'
         datasets = Synapse_dataset
-        list_dir = './data/Synapse/lists/lists_Synapse/'
-        volume_path = './data/Synapse/test_vol_h5/'
+        list_dir = '/cabinet/dataset/Synapse/lists/lists_Synapse/'
+        volume_path = '/cabinet/dataset/Synapse/test_vol_h5/'
     else:
         raise Exception('datasets in not right!')
     
@@ -55,16 +55,16 @@ class setting_config:
     amp = False
 
     batch_size = 32
-    epochs = 300
-    work_dir = 'results/' + network + '_' + datasets_name + '_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
+    epochs = 400
+    work_dir = '/cabinet/reza/sina/vmaco/results/v3/' + network + '_' + datasets_name + '_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
     # 'D:/CODES/MedSeg/BIBM22/results/datrm2_isic18_Sunday_04_September_2022_12h_04m_10s/'
     print_interval = 20
-    val_interval = 100
+    val_interval = 50
     test_weights_path = ''
 
     threshold = 0.5
 
-    opt = 'AdamW'
+    opt = 'SGD'
     assert opt in ['Adadelta', 'Adagrad', 'Adam', 'AdamW', 'Adamax', 'ASGD', 'RMSprop', 'Rprop', 'SGD'], 'Unsupported optimizer!'
     if opt == 'Adadelta':
         lr = 0.01 # default: 1.0 – coefficient that scale delta before it is applied to the parameters
@@ -111,7 +111,7 @@ class setting_config:
         etas = (0.5, 1.2) # default: (0.5, 1.2) – pair of (etaminus, etaplis), that are multiplicative increase and decrease factors
         step_sizes = (1e-6, 50) # default: (1e-6, 50) – a pair of minimal and maximal allowed step sizes 
     elif opt == 'SGD':
-        lr = 0.003 # – learning rate
+        lr = 0.05 # – learning rate
         momentum = 0.9 # default: 0 – momentum factor 
         weight_decay = 0.0001 # default: 0 – weight decay (L2 penalty) 
         dampening = 0 # default: 0 – dampening for momentum
