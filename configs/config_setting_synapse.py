@@ -5,20 +5,28 @@ from utils import *
 
 from datetime import datetime
 import ml_collections
-
+from models.vmaco import *
 class setting_config:
     """
     the config of training setting.
     """
     network = 'vmunet' 
     model_config = {
-        'num_classes': 9, 
-        'input_channels': 3, 
+        'num_classes': 9,
+        'patch_size': 4, 
+        'in_chans': 3,
+        'd_state': 16, 
         # ----- VM-UNet ----- #
         'depths': [2,2,2,2],
         'depths_decoder': [2,2,2,1],
-        'drop_path_rate': 0.2,
-        'load_ckpt_path': './pre_trained_weights/vmamba_small_e238_ema.pth',
+        'drop_rate': 0.,
+        'attn_drop_rate': 0.,
+        'drop_path_rate': 0.,
+        'vss_layer': VSSLayerV3,
+        'dims': [96, 192, 384, 768],
+        'dims_decoder': [768, 384, 192, 96],
+        'load_ckpt_path': None,
+
     }
     datasets_name = 'synapse' 
     input_size_h = 224

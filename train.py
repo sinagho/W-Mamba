@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 import timm
 from datasets.dataset import NPY_datasets
 from tensorboardX import SummaryWriter
-from models.vmunet.vmunet import VMUNet
+from models.vmaco import VMACO as VMUNet
 
 from engine import *
 import os
@@ -74,14 +74,21 @@ def main(config):
     if config.network == 'vmunet':
         model = VMUNet(
             num_classes=model_cfg['num_classes'],
-            input_channels=model_cfg['input_channels'],
+            patch_size = model_cfg['patch_size'],
+            d_state = model_cfg['d_state'],
+            in_chans=model_cfg['in_chans'],
             depths=model_cfg['depths'],
             depths_decoder=model_cfg['depths_decoder'],
+            drop_rate = model_cfg['drop_rate'],
+            attn_drop_rate = model_cfg['attn_drop_rate'],
             drop_path_rate=model_cfg['drop_path_rate'],
-            load_ckpt_path=model_cfg['load_ckpt_path'],
+            vss_layer = model_cfg['vss_layer'],
+            dims = model_cfg['dims'],
+            dims_decoder = model_cfg['dims_decoder'],
+            load_ckpt_path=None,
         )
-        model.load_from()
-        
+        # model.load_from()
+
     else: raise Exception('network in not right!')
     model = model.cuda()
 
