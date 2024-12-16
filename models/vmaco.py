@@ -158,10 +158,9 @@ class VSSLayer(BaseModule):
         if self.downsample: x = self.downsample(x)
         return x
 
-VSSLayerV1 = partial(VSSLayer, vss_module=VSSModuleV1)
-VSSLayerV2 = partial(VSSLayer, vss_module=VSSModuleV2)
-VSSLayerV3 = partial(VSSLayer, vss_module=VSSModuleV3)
-
+VSSLayerV1 = partial(VSSLayer, vss_block=VSSModuleV1)
+VSSLayerV2 = partial(VSSLayer, vss_block=VSSModuleV2)
+VSSLayerV3 = partial(VSSLayer, vss_block=VSSModuleV3)
 VSSLayer_down_V1 = partial(VSSLayerV1, upsample=None)
 VSSLayer_down_V2 = partial(VSSLayerV2, upsample=None)
 VSSLayer_down_V3 = partial(VSSLayerV3, upsample=None)
@@ -174,7 +173,7 @@ class VMACO(BaseModule):
     def __init__(self, patch_size=4, in_chans=3, num_classes=9, depths=[2, 2, 2, 2], depths_decoder=[2, 2, 2, 2],
                  dims=[96, 192, 384, 768], dims_decoder=[768, 384, 192, 96], d_state=16, drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1,
                  norm_layer=nn.LayerNorm, patch_norm=True, use_checkpoint=False, 
-                 vss_layer=VSSLayerV1,
+                 vss_layer=VSSLayerV3,
                  spatial_size=224, stage_specs=["L", "L", "L", "L"], **kwargs):
         super().__init__()
         self.num_classes = num_classes
