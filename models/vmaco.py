@@ -10,6 +10,7 @@ import torch.utils.checkpoint as checkpoint
 from einops import rearrange, repeat
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 
+from blocks.common import BaseModule
 from blocks.patch import PatchEmbed2D, PatchMerging2D, PatchExpand2D, Final_PatchExpand2D
 from blocks.ssm import VSSBlock
 from blocks.vit import IBIBlock
@@ -77,13 +78,15 @@ class VSSModuleV3(VSSModule):
         fmap_size = kwargs['fmap_size']        
         
         super().__init__(*args, **kwargs)
+        stage_spec = kwargs.get('stage_spec', 'L')
+        depths = len(stage_spec)
         
         self.cbbam = CBAM(self.hidden_dim, ratio=16, kernel_size=5)
         self.ibi = IBIBlock(fmap_size, 
                             window_size=7, 
                             dim_in=self.hidden_dim, 
                             dim_embed=self.hidden_dim, 
-                            depths=2, stage_spec='LS', heads=4, 
+                            depths=depths, stage_spec=stage_spec, heads=4, 
                             attn_drop=0.0, proj_drop=0.0, expansion_mlp=1,
                             drop=0.0, drop_path_rate=0.0, use_dwc_mlp=False)
 
@@ -95,21 +98,6 @@ class VSSModuleV3(VSSModule):
         x_vss = self.vssm(x)
         x = self.mlp(x_vss + x)
         return x
-
-class BaseModule(nn.Module):
-    def _init_weights(self, m: nn.Module):
-        for name, p in m.named_parameters():
-            if name in ["out_proj.weight"]:
-                p = p.clone().detach_() # fake init, just to keep the seed ....
-                nn.init.kaiming_uniform_(p, a=math.sqrt(5))
-
-        if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
 
 
 class VSSLayer(BaseModule):
@@ -141,7 +129,7 @@ class VSSLayer(BaseModule):
         window_size=7,
         **kwargs,
     ):
-        
+        stage_specs = kwargs.get('stage_spec', "L")
         fmap_size = spatial_dim // window_size
         
         super().__init__()
@@ -156,6 +144,7 @@ class VSSLayer(BaseModule):
             init_value = init_value,
             fmap_size = fmap_size,
             window_size = window_size,
+            stage_spec = stage_specs,
         ) for i in range(depth)])
 
         self.upsample = upsample(dim, norm_layer=norm_layer) if callable(upsample) else None
@@ -182,11 +171,11 @@ VSSLayer_up_V3 = partial(VSSLayerV3, downsample=None)
 
 
 class VMACO(BaseModule):
-    def __init__(self, patch_size=4, in_chans=3, num_classes=1000, depths=[2, 2, 9, 2], depths_decoder=[2, 9, 2, 2],
+    def __init__(self, patch_size=4, in_chans=3, num_classes=9, depths=[2, 2, 9, 2], depths_decoder=[2, 9, 2, 2],
                  dims=[96, 192, 384, 768], dims_decoder=[768, 384, 192, 96], d_state=16, drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1,
                  norm_layer=nn.LayerNorm, patch_norm=True, use_checkpoint=False, 
                  vss_layer=VSSLayerV1,
-                 spatial_size=224, **kwargs):
+                 spatial_size=224, stage_specs=["L", "L", "L", "L"], **kwargs):
         super().__init__()
         self.num_classes = num_classes
         self.num_layers = len(depths)
@@ -223,7 +212,7 @@ class VMACO(BaseModule):
                 downsample=PatchMerging2D if (i_layer < self.num_layers - 1) else None,
                 use_checkpoint=use_checkpoint,
                 fmap_size=fmas[i_layer],
-
+                stage_spec=stage_specs[i_layer],
             ) for i_layer in range(self.num_layers)
         ])
 
@@ -240,6 +229,7 @@ class VMACO(BaseModule):
                 upsample=PatchExpand2D if (i_layer != 0) else None,
                 use_checkpoint=use_checkpoint,
                 fmap_size=fmas[i_layer],
+                stage_spec=stage_specs[::-1][i_layer],
             ) for i_layer in range(self.num_layers)
         ])
 
