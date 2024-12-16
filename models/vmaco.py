@@ -158,9 +158,9 @@ class VSSLayer(BaseModule):
         if self.downsample: x = self.downsample(x)
         return x
 
-VSSLayerV1 = partial(VSSLayer, vss_block=VSSModuleV1)
-VSSLayerV2 = partial(VSSLayer, vss_block=VSSModuleV2)
-VSSLayerV3 = partial(VSSLayer, vss_block=VSSModuleV3)
+VSSLayerV1 = partial(VSSLayer, vss_module=VSSModuleV1)
+VSSLayerV2 = partial(VSSLayer, vss_module=VSSModuleV2)
+VSSLayerV3 = partial(VSSLayer, vss_module=VSSModuleV3)
 VSSLayer_down_V1 = partial(VSSLayerV1, upsample=None)
 VSSLayer_down_V2 = partial(VSSLayerV2, upsample=None)
 VSSLayer_down_V3 = partial(VSSLayerV3, upsample=None)
