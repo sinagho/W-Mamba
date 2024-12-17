@@ -14,7 +14,7 @@ class setting_config:
     model_config = {
         'num_classes': 9,
         'patch_size': 4, 
-        'in_chans': 3,
+        'in_chans': 1,
         'd_state': 16, 
         # ----- VM-UNet ----- #
         'depths': [2,2,2,2],
@@ -26,7 +26,7 @@ class setting_config:
         'dims': [96, 192, 384, 768],
         'dims_decoder': [768, 384, 192, 96],
         'load_ckpt_path': None,
-        'stage_specs': ["LS", "LS", "LS", "LS"]
+        'stage_specs': ["L", "L", "L", "L"]
     }
     datasets_name = 'synapse' 
     input_size_h = 224
@@ -41,22 +41,22 @@ class setting_config:
     
     pretrained_path = '' # if using pretrained, please enter the path of weights
     num_classes = 9
-    loss_weight = [1, 1]
+    loss_weight = [0.4, 0.6] #[1, 1]
     criterion = CeDiceLoss(num_classes, loss_weight)
     z_spacing = 1
     input_channels = 3
 
     distributed = False
     local_rank = -1
-    num_workers = 0 #16
+    num_workers = 32 #16
     seed = 42
     world_size = None
     rank = None
-    amp = False
+    amp = True
 
     batch_size = 32
     epochs = 400
-    work_dir = '/cabinet/reza/sina/vmaco/results/v3/' + network + '_' + datasets_name + '_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
+    work_dir = '/cabinet/reza/sina/vmaco/results/v3/' + network + '_ce0.4_sgd0.1_' + datasets_name + '_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
     # 'D:/CODES/MedSeg/BIBM22/results/datrm2_isic18_Sunday_04_September_2022_12h_04m_10s/'
     print_interval = 20
     val_interval = 50
@@ -111,7 +111,7 @@ class setting_config:
         etas = (0.5, 1.2) # default: (0.5, 1.2) – pair of (etaminus, etaplis), that are multiplicative increase and decrease factors
         step_sizes = (1e-6, 50) # default: (1e-6, 50) – a pair of minimal and maximal allowed step sizes 
     elif opt == 'SGD':
-        lr = 0.05 # – learning rate
+        lr = 0.1 # – learning rate
         momentum = 0.9 # default: 0 – momentum factor 
         weight_decay = 0.0001 # default: 0 – weight decay (L2 penalty) 
         dampening = 0 # default: 0 – dampening for momentum
